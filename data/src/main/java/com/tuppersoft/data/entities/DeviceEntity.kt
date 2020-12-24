@@ -1,3 +1,3 @@
 package com.tuppersoft.data.entities
 
-data class DeciveEntity(val name: String, val mac: String)
+data class DeviceEntity(val name: String, val mac: String)

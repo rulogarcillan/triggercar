@@ -1,10 +1,9 @@
 package com.tuppersoft.data.datasource
 
-import android.bluetooth.BluetoothAdapter
-import javax.inject.Inject
+import com.tuppersoft.data.entities.DeviceEntity
 
-class BluetoothDataSourceImpl @Inject constructor(val bluetoothAdapter: BluetoothAdapter?) {
+interface BluetoothDataSource  {
 
-    fun getDevices
+    fun getDevices(): List<DeviceEntity>
 
 }

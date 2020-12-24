@@ -1,11 +1,14 @@
 package com.tuppersoft.domain.usescases
 
-class GetCharacters constructor(private val repository: MarvelRepository) :
-    GlobalUseCase<Flow<CharacterData>, Params>() {
+import com.tuppersoft.domain.models.DeviceModel
+import com.tuppersoft.domain.repositories.BluetoothRepository
+import com.tuppersoft.domain.usescases.GlobalUseCase.None
+import kotlinx.coroutines.flow.Flow
 
-    data class Params(val limit: Int = 100, val offset: Int = 0)
+class GetKnowDevicesUseCase constructor(private val repository: BluetoothRepository) :
+    GlobalUseCase<Flow<List<DeviceModel>>, None>() {
 
-    override suspend fun run(params: Params): Flow<CharacterData> {
-        return repository.getCharacters(params.limit, params.offset)
+    override suspend fun run(params: None): Flow<List<DeviceModel>> {
+        return repository.getKnowDevices()
     }
 }

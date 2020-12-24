@@ -1,11 +1,11 @@
-package com.tuppersoft.domain.repositories;
+package com.tuppersoft.domain.repositories
 
-import javax.inject.Inject;
+import com.tuppersoft.domain.models.DeviceModel
+import kotlinx.coroutines.flow.Flow
 
-class BluetoothRepositoryImpl
+interface BluetoothRepository {
 
-        @Inject
-        constructor(
-        ) :BluetoothRepository{
+    suspend fun getKnowDevices(): Flow<List<DeviceModel>>
+}
 
-        }
+

@@ -1,4 +1,4 @@
-package com.tuppersoft.domain
+package com.tuppersoft.domain.usescases
 
 abstract class GlobalUseCase<out Type, in Params> where Type : Any? {
 

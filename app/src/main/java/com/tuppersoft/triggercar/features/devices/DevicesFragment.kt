@@ -1,4 +1,4 @@
-package com.tuppersoft.triggercar.main
+package com.tuppersoft.triggercar.features.devices
 
 import android.Manifest.permission
 import android.bluetooth.BluetoothAdapter
@@ -21,17 +21,26 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.tuppersoft.skizo.android.core.extension.loadSharedPreference
 import com.tuppersoft.skizo.android.core.extension.logd
+import com.tuppersoft.skizo.android.core.extension.saveSharedPreference
 import com.tuppersoft.triggercar.core.platform.GlobalFragment
-import com.tuppersoft.triggercar.databinding.MainFragmentBinding
+import com.tuppersoft.triggercar.databinding.DevicesFragmentBinding
+import com.tuppersoft.triggercar.features.main.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainFragment : GlobalFragment() {
+class DevicesFragment : GlobalFragment() {
 
-    private val viewModel: MainViewModel by activityViewModels()
+    private val viewModel: MainActivityViewModel by activityViewModels()
+    private val devicesViewModel: DevicesViewModel by viewModels()
+    private val deviceListAdapter = DeviceListAdapter()
 
-    private var _binding: MainFragmentBinding? = null
+    private var _binding: DevicesFragmentBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -39,18 +48,41 @@ class MainFragment : GlobalFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = MainFragmentBinding.inflate(inflater, container, false)
+        _binding = DevicesFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        init()
 
         val filter = IntentFilter()
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED)
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         activity?.registerReceiver(mReceiver, filter)
+    }
+
+    private fun init() {
+        handleDeviceList()
+        devicesViewModel.getDevices(getListDevicesSelecteds())
+        deviceListAdapter.setOnclickItemListener {
+
+            val listMacs = getListDevicesSelecteds()
+            if (listMacs.contains(it.mac)) {
+                listMacs.remove(it.mac)
+            } else {
+                listMacs.add(it.mac)
+            }
+            context?.saveSharedPreference(MAC_SELECTED, listMacs.joinToString("-"))
+
+        }
+    }
+
+    private fun getListDevicesSelecteds(): MutableList<String> {
+        val listString = context?.loadSharedPreference(MAC_SELECTED, "")
+        val listMacs = listString?.split("-")?.toMutableList() ?: mutableListOf()
+        return listMacs
     }
 
     private val mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -75,6 +107,19 @@ class MainFragment : GlobalFragment() {
                     "Device ${device?.name} has disconnected".logd()
                     turnOff()
                 }
+            }
+        }
+    }
+
+    private fun handleDeviceList() {
+
+        lifecycleScope.launch {
+            devicesViewModel.devices.collect { deviceList ->
+
+                binding.rvDevices.adapter = deviceListAdapter.apply {
+                    submitList(deviceList)
+                }
+
             }
         }
     }
@@ -119,5 +164,10 @@ class MainFragment : GlobalFragment() {
 
     private fun turnOff() {
         mReservation?.close()
+    }
+
+    companion object {
+
+        const val MAC_SELECTED = "MAC_SELECTED"
     }
 }

@@ -1,0 +1,119 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "kotlin-kapt"
+    id "dagger.hilt.android.plugin"
+    id "androidx.navigation.safeargs.kotlin"
+}
+
+android {
+
+    buildFeatures {
+        viewBinding = true
+    }
+
+    compileSdkVersion sdk_version
+    buildToolsVersion = buildVersion
+
+    defaultConfig {
+        applicationId "com.tuppersoft.triggercar"
+
+        minSdkVersion min_sdk_version
+        targetSdkVersion sdk_version
+
+        versionCode versionCode
+        versionName versionName
+
+        vectorDrawables.useSupportLibrary = true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file("androiddebug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+        release {
+            storeFile file("xxxxx")
+            storePassword "xxxxx"
+            keyAlias "xxxxx"
+            keyPassword "xxxxxx"
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            signingConfig signingConfigs.debug
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+
+        release {
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.core:core-ktx:$core_ktx_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+
+    implementation "com.facebook.shimmer:shimmer:$shimmer_version"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
+
+
+    //Android DI hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_compiler_version"
+    kapt "androidx.hilt:hilt-compiler:$hilt_compiler_version"
+
+    //Glide
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
+
+    implementation project(":data")
+    implementation project(":domain")
+    api project(':skizo-android-core')
+    api project(':skizo-kotlin-core')
+
+    //debug
+    implementation "com.facebook.stetho:stetho:$stetho_version"
+
+
+    //testing libraries
+    testImplementation "junit:junit:4.13.1"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+
+}
