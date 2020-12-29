@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">triggercar</string>
+    <string name="app_name">Trigger</string>
+    <string name="run_service">Run service</string>
 </resources>

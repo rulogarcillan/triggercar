@@ -28,12 +28,16 @@ buildscript {
         retrofit_version = "2.9.0"
         constraintlayout_version = "2.0.4"
         okhttp3_version = "4.9.0"
+        room_version = "2.2.6"
+        work_version = "2.4.0"
+        permissionsdispatcher_version = "4.8.0"
 
     }
 
     repositories {
         google()
         jcenter()
+
     }
     dependencies {
         dependencies {
@@ -49,6 +53,8 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
+
     }
 }
 

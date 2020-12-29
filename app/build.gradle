@@ -16,7 +16,7 @@ android {
     buildToolsVersion = buildVersion
 
     defaultConfig {
-        applicationId "com.tuppersoft.triggercar"
+        applicationId "com.tuppersoft.trigger"
 
         minSdkVersion min_sdk_version
         targetSdkVersion sdk_version
@@ -92,6 +92,10 @@ dependencies {
     implementation "com.facebook.shimmer:shimmer:$shimmer_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
 
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+
+    implementation "org.permissionsdispatcher:permissionsdispatcher:${permissionsdispatcher_version}"
+    kapt "org.permissionsdispatcher:permissionsdispatcher-processor:${permissionsdispatcher_version}"
 
     //Android DI hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
