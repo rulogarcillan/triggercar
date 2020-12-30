@@ -5,11 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.provider.Settings.System
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatDelegate
-import com.tuppersoft.skizo.android.core.extension.loadSharedPreference
-import com.tuppersoft.skizo.android.core.extension.saveSharedPreference
+import com.tuppersoft.trigger.R.string
+import com.tuppersoft.trigger.core.extension.canWrite
 import com.tuppersoft.trigger.core.platform.GlobalActivity
 import com.tuppersoft.trigger.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,11 +28,9 @@ class MainActivity : GlobalActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        loadTheme()
         initWithPermissionCheck()
     }
 
@@ -43,55 +41,66 @@ class MainActivity : GlobalActivity() {
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     fun init() {
-        viewModel.permissionAccept(true)
+        if (!canWrite()) {
+            settingPermission()
+        } else {
+            viewModel.permissionAccept(true)
+        }
+    }
+
+    private fun settingPermission() {
+        if (!System.canWrite(applicationContext)) {
+            val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:$packageName"))
+            startActivityForResult(intent, MY_PERMISSIONS_MANAGE_WRITE_SETTINGS)
+        }
     }
 
     @OnPermissionDenied(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     fun onPermissionDenied() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setTitle("Need permission")
-            .setMessage("The application need always permission to work")
-            .setPositiveButton("Understood") { dialog, which ->
+        builder.setTitle(getString(string.need_permission))
+            .setMessage(getString(string.need_permission_explained))
+            .setPositiveButton(getString(string.understood)) { dialog, which ->
                 initWithPermissionCheck()
-
             }
-            .setNegativeButton("Exit") { dialog, which ->
+            .setNegativeButton(getString(string.exit)) { dialog, which ->
                 finish()
             }
+            .setCancelable(false)
             .show()
     }
 
     @OnNeverAskAgain(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
     fun onPermissionNeverAskAgain() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setTitle("Need permission")
-            .setMessage("The application need always permission to work")
-            .setPositiveButton("Settings") { dialog, which ->
+        builder.setTitle(string.need_permission)
+            .setMessage(string.need_permission_explained)
+            .setPositiveButton(getString(string.settings)) { dialog, which ->
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri: Uri = Uri.fromParts("package", packageName, null)
                 intent.data = uri
                 startActivity(intent)
             }
-            .setNegativeButton("Exit") { dialog, which ->
+            .setNegativeButton(string.exit) { dialog, which ->
                 finish()
             }
+            .setCancelable(false)
             .show()
     }
 
-    private fun changeTheme() {
-        if (this.loadSharedPreference(
-                "THEME_MODE",
-                delegate.localNightMode
-            ) == AppCompatDelegate.MODE_NIGHT_YES
-        ) {
-            delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
-        } else {
-            delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == MY_PERMISSIONS_MANAGE_WRITE_SETTINGS) {
+            if (canWrite()) {
+                viewModel.permissionAccept(true)
+            } else {
+                settingPermission()
+            }
         }
-        saveSharedPreference("THEME_MODE", delegate.localNightMode)
     }
 
-    private fun loadTheme() {
-        delegate.localNightMode = loadSharedPreference("THEME_MODE", delegate.localNightMode)
+    companion object {
+
+        const val MY_PERMISSIONS_MANAGE_WRITE_SETTINGS = 100
     }
 }

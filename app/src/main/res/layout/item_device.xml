@@ -14,6 +14,7 @@
         android:layout_width="@dimen/margin_24"
         android:layout_height="@dimen/margin_24"
         android:src="@drawable/ic_bluetooth"
+        android:tint="?attr/colorBluetoothIcon"
         app:layout_constraintBottom_toBottomOf="@+id/lyContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/lyContainer" />
@@ -47,7 +48,7 @@
 
     </LinearLayout>
 
-    <CheckBox
+    <com.google.android.material.switchmaterial.SwitchMaterial
 
         android:id="@+id/cbCheck"
         android:layout_width="wrap_content"

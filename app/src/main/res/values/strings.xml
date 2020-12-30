@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Trigger</string>
     <string name="run_service">Run service</string>
+
+    <string name="intent_action_turnon">com.fitc.wifihotspot.TURN_ON</string>
+    <string name="intent_action_turnoff">com.fitc.wifihotspot.TURN_OFF</string>
+    <string name="need_permission">Need permission</string>
+    <string name="need_permission_explained">The application need always permission to work</string>
+    <string name="understood">Understood</string>
+    <string name="exit">Exit</string>
+    <string name="settings">Settings</string>
 </resources>

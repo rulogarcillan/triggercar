@@ -12,21 +12,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.wifi.WifiManager
-import android.net.wifi.WifiManager.LocalOnlyHotspotCallback
-import android.net.wifi.WifiManager.LocalOnlyHotspotReservation
 import android.os.Build
 import android.os.Build.VERSION_CODES
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.os.PowerManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.tuppersoft.skizo.android.core.extension.logd
 import com.tuppersoft.trigger.R
+import com.tuppersoft.trigger.core.extension.canWrite
 import com.tuppersoft.trigger.features.broadcast.BluetoothReceiver
 import com.tuppersoft.trigger.features.main.MainActivity
 import java.util.Locale
@@ -35,8 +29,7 @@ class MonitorService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var isServiceStarted = false
-    private val bluetoothReciever = BluetoothReceiver()
-    private var mReservation: LocalOnlyHotspotReservation? = null
+    private val bluetoothReceiver = BluetoothReceiver()
 
     override fun onBind(intent: Intent): IBinder? {
         "Some component want to bind with the service".logd()
@@ -80,7 +73,6 @@ class MonitorService : Service() {
         Toast.makeText(this, "Service starting its task", Toast.LENGTH_SHORT).show()
         isServiceStarted = true
 
-        // we need this lock so our service gets not affected by Doze Mode
         wakeLock =
             (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                 newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EndlessService::lock").apply {
@@ -106,6 +98,7 @@ class MonitorService : Service() {
             "Service stopped without being started: ${e.message}".logd()
         }
         isServiceStarted = false
+        turnOff()
         stopBroadcast()
     }
 
@@ -157,7 +150,7 @@ class MonitorService : Service() {
         }
 
         try {
-            applicationContext.registerReceiver(bluetoothReciever, filter)
+            applicationContext.registerReceiver(bluetoothReceiver, filter)
             "Start bluetoothReceiver".logd()
         } catch (e: java.lang.Exception) {
             "bluetoothReceiver was registred".logd()
@@ -167,18 +160,14 @@ class MonitorService : Service() {
     private fun stopBroadcast() {
 
         try {
-            applicationContext.unregisterReceiver(bluetoothReciever)
+            applicationContext.unregisterReceiver(bluetoothReceiver)
             "Stop bluetoothReceiver".logd()
         } catch (e: java.lang.Exception) {
             "bluetoothReceiver wasn't registred".logd()
         }
     }
 
-    @RequiresApi(api = VERSION_CODES.O)
     private fun turnOn() {
-
-        val manager = applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
-
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
                 permission.ACCESS_FINE_LOCATION
@@ -187,31 +176,23 @@ class MonitorService : Service() {
                 applicationContext,
                 permission.ACCESS_BACKGROUND_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
+            && canWrite()
         ) {
+            MyOreoWifiManager(applicationContext).apply {
 
-            manager.startLocalOnlyHotspot(object : LocalOnlyHotspotCallback() {
-                override fun onStarted(reservation: LocalOnlyHotspotReservation) {
-                    super.onStarted(reservation)
-                    "Wifi Hotspot is on now".logd()
-                    mReservation = reservation
-                }
+                startTethering(object : MyOnStartTetheringCallback() {
+                    override fun onTetheringStarted() {}
 
-                override fun onStopped() {
-                    super.onStopped()
-                    "onStopped: ".logd()
-                }
-
-                override fun onFailed(reason: Int) {
-                    super.onFailed(reason)
-                    "onFailed".logd()
-                }
-            }, Handler(Looper.getMainLooper()))
+                    override fun onTetheringFailed() {}
+                })
+            }
         } else {
             "No permission".logd()
+            stopService()
         }
     }
 
     private fun turnOff() {
-        mReservation?.close()
+        MyOreoWifiManager(applicationContext).stopTethering()
     }
 }

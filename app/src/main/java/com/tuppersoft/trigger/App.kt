@@ -15,11 +15,13 @@ class App : Application() {
         AppCompatDelegate.setDefaultNightMode(
             loadSharedPreference(
                 "THEME_MODE",
-                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                AppCompatDelegate.MODE_NIGHT_YES
             )
         )
 
-        Stetho.initializeWithDefaults(this)
+        if (BuildConfig.DEBUG) {
+            Stetho.initializeWithDefaults(this)
+        }
     }
 }
 

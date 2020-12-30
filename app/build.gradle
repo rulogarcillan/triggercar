@@ -114,6 +114,7 @@ dependencies {
 
     //debug
     implementation "com.facebook.stetho:stetho:$stetho_version"
+    implementation 'com.linkedin.dexmaker:dexmaker:2.25.0'
 
 
     //testing libraries
